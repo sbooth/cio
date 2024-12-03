@@ -16,7 +16,7 @@ Add a package dependency to https://github.com/sbooth/cio in Xcode.
 1. Clone the [cio](https://github.com/sbooth/cio) repository.
 2. `swift build`.
 
-## cio
+## Contents
 
 | C++ Class | Description |
 | --- | --- |
