@@ -1,0 +1,5 @@
+module cio {
+	requires cplusplus17
+	header "cstream.hpp"
+	export *
+}
