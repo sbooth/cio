@@ -2,5 +2,7 @@ import Testing
 @testable import cio
 
 @Test func stream_test() async throws {
-	_ = cio.cstream()
+	let f = cio.cstream()
+	let valid = f.__convertToBool()
+	#expect(!valid)
 }
