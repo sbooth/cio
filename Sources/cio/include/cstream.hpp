@@ -270,8 +270,8 @@ public:
 
 	// MARK: Formatted Input/Output
 
-	/// Calls `std::vfscanf`
-	/// - seealso: [std::vfscanf](https://en.cppreference.com/w/cpp/io/c/vfscanf)
+	/// Calls `std::fscanf`
+	/// - seealso: [std::fscanf](https://en.cppreference.com/w/cpp/io/c/fscanf)
 	template <typename... Args>
 	int fscanf(const char *format, Args&&... args) noexcept
 	{
