@@ -280,9 +280,9 @@ public:
 
 	/// Calls `std::vfscanf`
 	/// - seealso: [std::vfscanf](https://en.cppreference.com/w/cpp/io/c/vfscanf)
-	int vfscanf(const char *format, va_list list) noexcept
+	int vfscanf(const char *format, std::va_list vlist) noexcept
 	{
-		return std::vfscanf(stream_, format, list);
+		return std::vfscanf(stream_, format, vlist);
 	}
 
 	/// Calls `std::fprintf`
@@ -295,9 +295,9 @@ public:
 
 	/// Calls `std::vfprintf`
 	/// - seealso: [std::vfprintf](https://en.cppreference.com/w/cpp/io/c/vfprintf)
-	int vfprintf(const char *format, va_list list) noexcept
+	int vfprintf(const char *format, std::va_list vlist) noexcept
 	{
-		return std::vfprintf(stream_, format, list);
+		return std::vfprintf(stream_, format, vlist);
 	}
 
 	// MARK: File Positioning
