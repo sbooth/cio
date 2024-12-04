@@ -193,20 +193,25 @@ public:
 		return std::fread(buffer, size, count, stream_);
 	}
 
-	/// Calls `std::fread`
-	/// - seealso: [std::fread](https://en.cppreference.com/w/cpp/io/c/fread)
+	/// Returns the result of `fread(buffer, sizeof(T), count)`
 	template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
 	std::size_t fread(T *buffer, std::size_t count) noexcept
 	{
 		return fread(buffer, sizeof(T), count);
 	}
 
-	/// Calls `std::fread`
-	/// - seealso: [std::fread](https://en.cppreference.com/w/cpp/io/c/fread)
+	/// Returns the result of `fread(buffer, S)`
 	template <typename T, std::size_t S>
 	std::size_t fread(T (&buffer)[S]) noexcept
 	{
-		return fread(buffer, sizeof(T), S);
+		return fread(buffer, S);
+	}
+
+	/// Returns the result of `fread(&value, 1)`
+	template <typename T>
+	std::size_t fread(T& value) noexcept
+	{
+		return fread(&value, 1);
 	}
 
 	/// Calls `std::fwrite`
@@ -216,20 +221,25 @@ public:
 		return std::fwrite(buffer, size, count, stream_);
 	}
 
-	/// Calls `std::fwrite`
-	/// - seealso: [std::fwrite](https://en.cppreference.com/w/cpp/io/c/fwrite)
+	/// Returns the result of `fwrite(buffer, sizeof(T), count)`
 	template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
 	std::size_t fwrite(const T *buffer, std::size_t count) noexcept
 	{
 		return fwrite(buffer, sizeof(T), count);
 	}
 
-	/// Calls `std::fwrite`
-	/// - seealso: [std::fwrite](https://en.cppreference.com/w/cpp/io/c/fwrite)
+	/// Returns the result of `fwrite(buffer, S)`
 	template <typename T, std::size_t S>
 	std::size_t fwrite(const T (&buffer)[S]) noexcept
 	{
-		return fwrite(buffer, sizeof(T), S);
+		return fwrite(buffer, S);
+	}
+
+	/// Returns the result of `fwrite(&value, 1)`
+	template <typename T>
+	std::size_t fwrite(const T& value) noexcept
+	{
+		return fwrite(&value, 1);
 	}
 
 	// MARK: Unformatted Input/Output
