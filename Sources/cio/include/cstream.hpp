@@ -13,7 +13,7 @@
 
 namespace cio {
 
-/// A class managing a C stream (a `std::FILE *` object).
+/// A class managing a C stream (`std::FILE *`) object.
 ///
 /// This class wraps the C-style I/O functions in the `<cstdio>` header.
 ///
@@ -21,6 +21,8 @@ namespace cio {
 class cstream {
 
 public:
+
+	// MARK: Standard Six
 
 	/// Initializes a `cio::cstream` object and sets the managed stream to `nullptr`.
 	explicit constexpr cstream() noexcept = default;
@@ -31,24 +33,26 @@ public:
 	// This class is non-assignable
 	cstream& operator=(const cstream& rhs) = delete;
 
-	/// Calls `std::fclose` on the managed stream.
+	/// Closes the managed stream.
 	~cstream()
 	{
 		reset();
 	}
 
-	/// Move constructor
+	/// Move constructor.
 	cstream(cstream&& rhs) noexcept
 	: cstream{rhs.release()}
 	{}
 
-	/// Move assignment operator
+	/// Move assignment operator.
 	cstream& operator=(cstream&& rhs) noexcept
 	{
 		if(this != &rhs)
 			reset(rhs.release());
 		return *this;
 	}
+
+	// MARK: Initialization
 
 	/// Initializes a `cio::cstream` object and sets the managed stream to the result of `std::fopen(filename, mode)`.
 	cstream(const char *filename, const char *mode) noexcept
@@ -59,6 +63,8 @@ public:
 	explicit cstream(std::FILE *stream) noexcept
 	: stream_{stream}
 	{}
+
+	// MARK: Comparison
 
 	/// Compares two `cio::cstream` objects for equality.
 	/// - parameter rhs: The object to compare.
@@ -75,6 +81,8 @@ public:
 	{
 		return !operator==(rhs);
 	}
+
+	// MARK: Managed Stream Handling
 
 	/// Returns `true` if the managed stream is not `std::nullptr`.
 	[[nodiscard]]
@@ -418,7 +426,7 @@ public:
 	/// Reads a value.
 	/// - parameter value: A reference to receive the value.
 	/// - returns: `true` on success, `false` otherwise.
-	template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
+	template <typename T>
 	bool read(T& value) noexcept
 	{
 		return fread(&value, 1) == 1;
@@ -530,7 +538,7 @@ public:
 	std::optional<T> read_uint(byte_order order) noexcept(std::is_nothrow_default_constructible_v<T>)
 	{
 		T value{};
-		if(!read(value, order))
+		if(!read_uint(value, order))
 			return std::nullopt;
 		return value;
 	}
