@@ -20,7 +20,7 @@ Add a package dependency to https://github.com/sbooth/cio in Xcode.
 
 | C++ Class | Description |
 | --- | --- |
-| [cio::cstream](Sources/cio/include/cstream.hpp) | A class managing a C stream (a `std::FILE *` object) |
+| [cio::cstream](Sources/cio/include/cstream.hpp) | A class managing a C stream (`std::FILE *`) object |
 ## License
 
 Released under the [MIT License](https://github.com/sbooth/cio/blob/main/LICENSE.txt).
