@@ -441,7 +441,7 @@ public:
 	}
 
 	/// Writes a block of data.
-	/// - parameter v: The data to write.
+	/// - parameter v: A `std::vector` containing the elements to write.
 	/// - returns: The number of elements written.
 	template <typename T>
 	typename std::vector<T>::size_type write_block(const std::vector<T>& v) noexcept
@@ -450,10 +450,10 @@ public:
 	}
 
 
-	/// Reads a value.
+	/// Gets a value.
 	/// - returns: The value read or `std::nullopt` on failure.
 	template <typename T, typename = std::enable_if_t<std::is_trivially_default_constructible_v<T>>>
-	std::optional<T> read() noexcept(std::is_nothrow_default_constructible_v<T>)
+	std::optional<T> get_value() noexcept(std::is_nothrow_default_constructible_v<T>)
 	{
 		T value{};
 		if(!fread(value))
@@ -479,7 +479,7 @@ public:
 	/// - parameter value: A reference to receive the value.
 	/// - parameter order: The desired byte order.
 	/// - returns: `true` on success, `false` otherwise.
-	template <typename T, typename = std::enable_if_t<std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> || std::is_same_v<T, std::uint64_t>>>
+	template <typename T, typename = std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>>
 	bool read_uint(T& value, byte_order order = byte_order::host) noexcept
 	{
 		if(!fread(value))
@@ -564,40 +564,80 @@ public:
 	}
 
 
-	/// Reads an unsigned integer value and optionally changes its byte order.
+	/// Writes an unsigned integer value, optionally changing its byte order.
+	/// - parameter value: The value to write.
 	/// - parameter order: The desired byte order.
-	/// - returns: The value read or `std::nullopt` on failure.
-	template <typename T, typename = std::enable_if_t<std::is_trivially_default_constructible_v<T>>>
-	std::optional<T> read_uint(byte_order order = byte_order::host) noexcept(std::is_nothrow_default_constructible_v<T>)
+	/// - returns: `true` on success, `false` otherwise.
+	template <typename T, typename = std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>>
+	bool write_uint(const T& value, byte_order order = byte_order::host) noexcept
 	{
-		T value{};
-		if(!read_uint(value, order))
-			return std::nullopt;
-		return value;
+		if constexpr (std::is_same_v<T, std::uint16_t>) {
+			switch(order) {
+				case byte_order::little_endian:
+					return fwrite(OSSwapHostToLittleInt16(value));
+				case byte_order::big_endian:
+					return fwrite(OSSwapHostToBigInt16(value));
+				case byte_order::host:
+					return fwrite(value);
+				case byte_order::swapped:
+					return fwrite(OSSwapInt16(value));
+			}
+		}
+		else if constexpr (std::is_same_v<T, std::uint32_t>) {
+			switch(order) {
+				case byte_order::little_endian:
+					return fwrite(OSSwapHostToLittleInt32(value));
+				case byte_order::big_endian:
+					return fwrite(OSSwapHostToBigInt32(value));
+				case byte_order::host:
+					return fwrite(value);
+				case byte_order::swapped:
+					return fwrite(OSSwapInt32(value));
+			}
+		}
+		else if constexpr (std::is_same_v<T, std::uint64_t>) {
+			switch(order) {
+				case byte_order::little_endian:
+					return fwrite(OSSwapHostToLittleInt64(value));
+				case byte_order::big_endian:
+					return fwrite(OSSwapHostToBigInt64(value));
+				case byte_order::host:
+					return fwrite(value);
+				case byte_order::swapped:
+					return fwrite(OSSwapInt64(value));
+			}
+		}
+		else
+			static_assert(false, "Invalid typename T");
+
+		return false;
 	}
 
-	/// Reads a little-endian unsigned integer value and converts it to host byte order.
-	/// - returns: The value read or `std::nullopt` on failure.
+	/// Writes an unsigned integer value converted to little-endian byte order.
+	/// - parameter value: The value to write.
+	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
-	std::optional<T> read_uint_little() noexcept
+	bool write_uint_little(const T& value) noexcept
 	{
-		return read_uint<T>(byte_order::little_endian);
+		return write_uint(value, byte_order::little_endian);
 	}
 
-	/// Reads a big-endian unsigned integer value and converts it to host byte order.
-	/// - returns: The value read or `std::nullopt` on failure.
+	/// Writes an unsigned integer value converted to big-endian byte order.
+	/// - parameter value: The value to write.
+	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
-	std::optional<T> read_uint_big() noexcept
+	bool write_uint_big(const T& value) noexcept
 	{
-		return read_uint<T>(byte_order::big_endian);
+		return write_uint(value, byte_order::big_endian);
 	}
 
-	/// Reads a little-endian unsigned integer value and swaps its byte order.
-	/// - returns: The value read or `std::nullopt` on failure.
+	/// Writes an unsigned integer value with swapped byte order.
+	/// - parameter value: The value to write.
+	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
-	std::optional<T> read_uint_swapped() noexcept
+	bool write_uint_swapped(const T& value) noexcept
 	{
-		return read_uint<T>(byte_order::swapped);
+		return write_uint(value, byte_order::swapped);
 	}
 
 private:
