@@ -8,6 +8,7 @@
 #import <cstdarg>
 #import <cstdint>
 #import <cstdio>
+#import <optional>
 #import <type_traits>
 #import <vector>
 
