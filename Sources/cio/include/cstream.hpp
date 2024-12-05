@@ -11,6 +11,8 @@
 #import <type_traits>
 #import <vector>
 
+#import <libkern/OSByteOrder.h>
+
 namespace cio {
 
 /// A class managing a C stream (`std::FILE *`) object.
@@ -206,11 +208,11 @@ public:
 		return fread(buffer, S);
 	}
 
-	/// Returns the result of `fread(&value, 1)`.
+	/// Returns the result of `fread(&value, 1) == 1`.
 	template <typename T>
-	std::size_t fread(T& value) noexcept
+	bool fread(T& value) noexcept
 	{
-		return fread(&value, 1);
+		return fread(&value, 1) == 1;
 	}
 
 	/// Returns the result of `std::fwrite(buffer, size, count)` on the managed stream.
@@ -234,11 +236,11 @@ public:
 		return fwrite(buffer, S);
 	}
 
-	/// Returns the result of `fwrite(&value, 1)`.
+	/// Returns the result of `fwrite(&value, 1) == 1`.
 	template <typename T>
-	std::size_t fwrite(const T& value) noexcept
+	bool fwrite(const T& value) noexcept
 	{
-		return fwrite(&value, 1);
+		return fwrite(&value, 1) == 1;
 	}
 
 	// MARK: Unformatted Input/Output
@@ -447,6 +449,18 @@ public:
 	}
 
 
+	/// Reads a value.
+	/// - returns: The value read or `std::nullopt` on failure.
+	template <typename T, typename = std::enable_if_t<std::is_trivially_default_constructible_v<T>>>
+	std::optional<T> read() noexcept(std::is_nothrow_default_constructible_v<T>)
+	{
+		T value{};
+		if(!fread(value))
+			return std::nullopt;
+		return value;
+	}
+
+
 	/// Possible byte orders.
 	enum class byte_order
 	{
@@ -464,34 +478,34 @@ public:
 	/// - parameter value: A reference to receive the value.
 	/// - parameter order: The desired byte order.
 	/// - returns: `true` on success, `false` otherwise.
-	template <typename T, typename = std::enable_if_t<std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>>>
-	bool read_uint(T& value, byte_order order) noexcept
+	template <typename T, typename = std::enable_if_t<std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> || std::is_same_v<T, std::uint64_t>>>
+	bool read_uint(T& value, byte_order order = byte_order::host) noexcept
 	{
-		if(fread(value) != 1)
+		if(!fread(value))
 			return false;
 
 		switch(order) {
 			case byte_order::little_endian:
 				switch(sizeof(T)) {
-					case 2:	value = static_cast<T>(OSSwapLittleToHostInt16(value)); break;
-					case 4:	value = static_cast<T>(OSSwapLittleToHostInt32(value)); break;
-					case 8:	value = static_cast<T>(OSSwapLittleToHostInt64(value)); break;
+					case 2:	value = OSSwapLittleToHostInt16(value); break;
+					case 4:	value = OSSwapLittleToHostInt32(value); break;
+					case 8:	value = OSSwapLittleToHostInt64(value); break;
 				}
 				break;
 			case byte_order::big_endian:
 				switch(sizeof(T)) {
-					case 2:	value = static_cast<T>(OSSwapBigToHostInt16(value)); break;
-					case 4:	value = static_cast<T>(OSSwapBigToHostInt32(value)); break;
-					case 8:	value = static_cast<T>(OSSwapBigToHostInt64(value)); break;
+					case 2:	value = OSSwapBigToHostInt16(value); break;
+					case 4:	value = OSSwapBigToHostInt32(value); break;
+					case 8:	value = OSSwapBigToHostInt64(value); break;
 				}
 				break;
 			case byte_order::host:
 				break;
 			case byte_order::swapped:
 				switch(sizeof(T)) {
-					case 2: value = static_cast<T>(OSSwapInt16(value)); break;
-					case 4: value = static_cast<T>(OSSwapInt32(value)); break;
-					case 8: value = static_cast<T>(OSSwapInt64(value)); break;
+					case 2: value = OSSwapInt16(value); break;
+					case 4: value = OSSwapInt32(value); break;
+					case 8: value = OSSwapInt64(value); break;
 				}
 				break;
 		}
@@ -517,15 +531,6 @@ public:
 		return read_uint(value, byte_order::big_endian);
 	}
 
-	/// Reads an unsigned integer value in host byte order.
-	/// - parameter value: A reference to receive the value.
-	/// - returns: `true` on success, `false` otherwise.
-	template <typename T>
-	bool read_uint_host(T& value) noexcept
-	{
-		return read_uint(value, byte_order::host);
-	}
-
 	/// Reads an unsigned integer value and swaps it byte order.
 	/// - parameter value: A reference to receive the value.
 	/// - returns: `true` on success, `false` otherwise.
@@ -535,11 +540,12 @@ public:
 		return read_uint(value, byte_order::swapped);
 	}
 
+
 	/// Reads an unsigned integer value and optionally changes its byte order.
 	/// - parameter order: The desired byte order.
 	/// - returns: The value read or `std::nullopt` on failure.
 	template <typename T, typename = std::enable_if_t<std::is_trivially_default_constructible_v<T>>>
-	std::optional<T> read_uint(byte_order order) noexcept(std::is_nothrow_default_constructible_v<T>)
+	std::optional<T> read_uint(byte_order order = byte_order::host) noexcept(std::is_nothrow_default_constructible_v<T>)
 	{
 		T value{};
 		if(!read_uint(value, order))
@@ -561,14 +567,6 @@ public:
 	std::optional<T> read_uint_big() noexcept
 	{
 		return read_uint<T>(byte_order::big_endian);
-	}
-
-	/// Reads a little-endian unsigned integer value in host byte order.
-	/// - returns: The value read or `std::nullopt` on failure.
-	template <typename T>
-	std::optional<T> read_uint_host() noexcept
-	{
-		return read_uint<T>(byte_order::host);
 	}
 
 	/// Reads a little-endian unsigned integer value and swaps its byte order.
