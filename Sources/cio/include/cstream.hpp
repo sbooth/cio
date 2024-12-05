@@ -27,10 +27,10 @@ public:
 	/// Initializes a `cio::cstream` object and sets the managed stream to `nullptr`.
 	explicit constexpr cstream() noexcept = default;
 
-	// This class is non-copyable
+	// This class is non-copyable.
 	cstream(const cstream& rhs) = delete;
 
-	// This class is non-assignable
+	// This class is non-assignable.
 	cstream& operator=(const cstream& rhs) = delete;
 
 	/// Closes the managed stream.
@@ -39,12 +39,12 @@ public:
 		reset();
 	}
 
-	/// Move constructor.
+	/// Initializes a `cio::cstream` object with the managed stream from `rhs` and sets the managed stream of `rhs` to `nullptr`.
 	cstream(cstream&& rhs) noexcept
 	: cstream{rhs.release()}
 	{}
 
-	/// Move assignment operator.
+	/// Closes the managed stream and replaces it with the managed stream from `rhs`, then sets the managed stream of `rhs` to `nullptr`.
 	cstream& operator=(cstream&& rhs) noexcept
 	{
 		if(this != &rhs)
@@ -112,7 +112,7 @@ public:
 			std::fclose(old);
 	}
 
-	/// Swaps the managed streams of `*this` and `other`.
+	/// Swaps the managed streams of this object and `other`.
 	void swap(cstream& other) noexcept
 	{
 		std::swap(stream_, other.stream_);
@@ -126,7 +126,7 @@ public:
 
 	// MARK: File Access
 
-	/// Calls `std::fopen`
+	/// Sets the managed stream to the result of `std::fopen(filename, mode)`.
 	/// - seealso: [std::fopen](https://en.cppreference.com/w/cpp/io/c/fopen)
 	cstream& fopen(const char *filename, const char *mode) noexcept
 	{
@@ -139,7 +139,7 @@ public:
 		return *this;
 	}
 
-	/// Calls `std::freopen`
+	/// Sets the managed stream to the result of `std::freopen(filename, mode)` on the current managed stream.
 	/// - seealso: [std::freopen](https://en.cppreference.com/w/cpp/io/c/freopen)
 	cstream& freopen(const char *filename, const char *mode) noexcept
 	{
@@ -147,7 +147,7 @@ public:
 		return *this;
 	}
 
-	/// Calls `std::fclose`
+	/// Returns the result of `std::fclose()` on the managed stream and sets the managed stream to `std::nullptr`.
 	/// - seealso: [std::fclose](https://en.cppreference.com/w/cpp/io/c/fclose)
 	int fclose() noexcept
 	{
@@ -156,29 +156,28 @@ public:
 		return result;
 	}
 
-	/// Calls `std::fflush`
+	/// Returns the result of `std::fflush()` on the managed stream.
 	/// - seealso: [std::fflush](https://en.cppreference.com/w/cpp/io/c/fflush)
 	int fflush() noexcept
 	{
 		return std::fflush(stream_);
 	}
 
-	/// Calls `std::setbuf`
+	/// Calls `std::setbuf(buffer)` on the managed stream.
 	/// - seealso: [std::setbuf](https://en.cppreference.com/w/cpp/io/c/setbuf)
 	void setbuf(char *buffer) noexcept
 	{
 		std::setbuf(stream_, buffer);
 	}
 
-	/// Calls `std::setvbuf`
+	/// Returns the result of `std::setvbuf(buffer, mode, size)` on the managed stream.
 	/// - seealso: [std::setvbuf](https://en.cppreference.com/w/cpp/io/c/setvbuf)
 	int setvbuf(char *buffer, int mode, std::size_t size) noexcept
 	{
 		return std::setvbuf(stream_, buffer, mode, size);
 	}
 
-	/// Calls `std::setvbuf`
-	/// - seealso: [std::setvbuf](https://en.cppreference.com/w/cpp/io/c/setvbuf)
+	/// Returns the result of `setvbuf(nullptr, _IONBF, 0)`.
 	int setvbuf(std::nullptr_t) noexcept
 	{
 		return setvbuf(nullptr, _IONBF, 0);
@@ -186,56 +185,56 @@ public:
 
 	// MARK: Direct Input/Output
 
-	/// Calls `std::fread`
+	/// Returns the result of `std::fread(buffer, size, count)` on the managed stream.
 	/// - seealso: [std::fread](https://en.cppreference.com/w/cpp/io/c/fread)
 	std::size_t fread(void *buffer, std::size_t size, std::size_t count) noexcept
 	{
 		return std::fread(buffer, size, count, stream_);
 	}
 
-	/// Returns the result of `fread(buffer, sizeof(T), count)`
+	/// Returns the result of `fread(buffer, sizeof(T), count)`.
 	template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
 	std::size_t fread(T *buffer, std::size_t count) noexcept
 	{
 		return fread(buffer, sizeof(T), count);
 	}
 
-	/// Returns the result of `fread(buffer, S)`
+	/// Returns the result of `fread(buffer, S)`.
 	template <typename T, std::size_t S>
 	std::size_t fread(T (&buffer)[S]) noexcept
 	{
 		return fread(buffer, S);
 	}
 
-	/// Returns the result of `fread(&value, 1)`
+	/// Returns the result of `fread(&value, 1)`.
 	template <typename T>
 	std::size_t fread(T& value) noexcept
 	{
 		return fread(&value, 1);
 	}
 
-	/// Calls `std::fwrite`
+	/// Returns the result of `std::fwrite(buffer, size, count)` on the managed stream.
 	/// - seealso: [std::fwrite](https://en.cppreference.com/w/cpp/io/c/fwrite)
 	std::size_t fwrite(const void *buffer, std::size_t size, std::size_t count) noexcept
 	{
 		return std::fwrite(buffer, size, count, stream_);
 	}
 
-	/// Returns the result of `fwrite(buffer, sizeof(T), count)`
+	/// Returns the result of `fwrite(buffer, sizeof(T), count)`.
 	template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
 	std::size_t fwrite(const T *buffer, std::size_t count) noexcept
 	{
 		return fwrite(buffer, sizeof(T), count);
 	}
 
-	/// Returns the result of `fwrite(buffer, S)`
+	/// Returns the result of `fwrite(buffer, S)`.
 	template <typename T, std::size_t S>
 	std::size_t fwrite(const T (&buffer)[S]) noexcept
 	{
 		return fwrite(buffer, S);
 	}
 
-	/// Returns the result of `fwrite(&value, 1)`
+	/// Returns the result of `fwrite(&value, 1)`.
 	template <typename T>
 	std::size_t fwrite(const T& value) noexcept
 	{
@@ -244,43 +243,43 @@ public:
 
 	// MARK: Unformatted Input/Output
 
-	/// Calls `std::fgetc`
+	/// Returns the result of `std::fgetc()` on the managed stream.
 	/// - seealso: [std::fgetc](https://en.cppreference.com/w/cpp/io/c/fgetc)
+	[[nodiscard]]
 	int fgetc() noexcept
 	{
 		return std::fgetc(stream_);
 	}
 
-	/// Calls `std::fgets`
+	/// Returns the result of `std::fgets(str)` on the managed stream.
 	/// - seealso: [std::fgets](https://en.cppreference.com/w/cpp/io/c/fgets)
 	char * fgets(char *str, int count) noexcept
 	{
 		return std::fgets(str, count, stream_);
 	}
 
-	/// Calls `std::fgets`
-	/// - seealso: [std::fgets](https://en.cppreference.com/w/cpp/io/c/fgets)
+	/// Returns the result of `fgets(str, S)`.
 	template <std::size_t S>
 	char * fgets(char (&str)[S]) noexcept
 	{
 		return fgets(str, S);
 	}
 
-	/// Calls `std::fputc`
+	/// Returns the result of `std::fputc(ch)` on the managed stream.
 	/// - seealso: [std::fputc](https://en.cppreference.com/w/cpp/io/c/fputc)
 	int fputc(int ch) noexcept
 	{
 		return std::fputc(ch, stream_);
 	}
 
-	/// Calls `std::fputs`
+	/// Returns the result of `std::fputs(str)` on the managed stream.
 	/// - seealso: [std::fputs](https://en.cppreference.com/w/cpp/io/c/fputs)
 	int fputs(const char *str) noexcept
 	{
 		return std::fputs(str, stream_);
 	}
 
-	/// Calls `std::ungetc`
+	/// Returns the result of `std::ungetc(ch)` on the managed stream.
 	/// - seealso: [std::ungetc](https://en.cppreference.com/w/cpp/io/c/ungetc)
 	int ungetc(int ch) noexcept
 	{
@@ -289,7 +288,7 @@ public:
 
 	// MARK: Formatted Input/Output
 
-	/// Calls `std::fscanf`
+	/// Returns the result of `std::fscanf(format, std::forward<Args>(args)...` on the managed stream.
 	/// - seealso: [std::fscanf](https://en.cppreference.com/w/cpp/io/c/fscanf)
 	template <typename... Args>
 	int fscanf(const char *format, Args&&... args) noexcept
@@ -297,14 +296,14 @@ public:
 		return std::fscanf(stream_, format, std::forward<Args>(args)...);
 	}
 
-	/// Calls `std::vfscanf`
+	/// Returns the result of `std::vfscanf(format, vlist)` on the managed stream.
 	/// - seealso: [std::vfscanf](https://en.cppreference.com/w/cpp/io/c/vfscanf)
 	int vfscanf(const char *format, std::va_list vlist) noexcept
 	{
 		return std::vfscanf(stream_, format, vlist);
 	}
 
-	/// Calls `std::fprintf`
+	/// Returns the result of `std::fprintf(format, std::forward<Args>(args)...)` on the managed stream.
 	/// - seealso: [std::fprintf](https://en.cppreference.com/w/cpp/io/c/fprintf)
 	template <typename... Args>
 	int fprintf(const char *format, Args&&... args) noexcept
@@ -312,7 +311,7 @@ public:
 		return std::fprintf(stream_, format, std::forward<Args>(args)...);
 	}
 
-	/// Calls `std::vfprintf`
+	/// Returns the result of `std::vfprintf(format, vlist)` on the managed stream.
 	/// - seealso: [std::vfprintf](https://en.cppreference.com/w/cpp/io/c/vfprintf)
 	int vfprintf(const char *format, std::va_list vlist) noexcept
 	{
@@ -321,35 +320,36 @@ public:
 
 	// MARK: File Positioning
 
-	/// Calls `std::ftell`
+	/// Returns the result of `std::ftell()` on the managed stream.
 	/// - seealso: [std::ftell](https://en.cppreference.com/w/cpp/io/c/ftell)
+	[[nodiscard]]
 	long ftell() const noexcept
 	{
 		return std::ftell(stream_);
 	}
 
-	/// Calls `std::fgetpos`
+	/// Returns the result of `std::fgetpos(pos)` on the managed stream.
 	/// - seealso: [std::fgetpos](https://en.cppreference.com/w/cpp/io/c/fgetpos)
 	int fgetpos(std::fpos_t *pos) const noexcept
 	{
 		return std::fgetpos(stream_, pos);
 	}
 
-	/// Calls `std::fseek`
+	/// Returns the result of `std::fseek(offset, origin)` on the managed stream.
 	/// - seealso: [std::fseek](https://en.cppreference.com/w/cpp/io/c/fseek)
 	int fseek(long offset, int origin) noexcept
 	{
 		return std::fseek(stream_, offset, origin);
 	}
 
-	/// Calls `std::fsetpos`
+	/// Returns the result of `std::fsetpos(pos)` on the managed stream.
 	/// - seealso: [std::fsetpos](https://en.cppreference.com/w/cpp/io/c/fsetpos)
 	int fsetpos(const std::fpos_t *pos) noexcept
 	{
 		return std::fsetpos(stream_, pos);
 	}
 
-	/// Calls `std::rewind`
+	/// Calls `std::rewind()` on the managed stream.
 	/// - seealso: [std::rewind](https://en.cppreference.com/w/cpp/io/c/rewind)
 	void rewind() noexcept
 	{
@@ -358,28 +358,30 @@ public:
 
 	// MARK: Error Handling
 
-	/// Calls `std::clearerr`
+	/// Calls `std::clearerr()` on the managed stream.
 	/// - seealso: [std::clearerr](https://en.cppreference.com/w/cpp/io/c/clearerr)
 	void clearerr() noexcept
 	{
 		std::clearerr(stream_);
 	}
 
-	/// Calls `std::feof`
+	/// Returns the result of `std::feof()` on the managed stream.
 	/// - seealso: [std::feof](https://en.cppreference.com/w/cpp/io/c/feof)
+	[[nodiscard]]
 	int feof() const noexcept
 	{
 		return std::feof(stream_);
 	}
 
-	/// Calls `std::ferror`
+	/// Returns the result of `std::ferror()` on the managed stream.
 	/// - seealso: [std::ferror](https://en.cppreference.com/w/cpp/io/c/ferror)
+	[[nodiscard]]
 	int ferror() const noexcept
 	{
 		return std::ferror(stream_);
 	}
 
-	/// Calls `std::perror`
+	/// Calls `std::perror(s)`.
 	/// - seealso: [std::perror](https://en.cppreference.com/w/cpp/io/c/perror)
 	static void perror(const char *s) noexcept
 	{
@@ -388,28 +390,29 @@ public:
 
 	// MARK: Operations on Files
 
-	/// Calls `std::remove`
+	/// Returns the result of `std::remove(pathname)`.
 	/// - seealso: [std::remove](https://en.cppreference.com/w/cpp/io/c/remove)
 	static int remove(const char *pathname) noexcept
 	{
 		return std::remove(pathname);
 	}
 
-	/// Calls `std::rename`
+	/// Returns the result of `std::rename(old_filename, new_filename)`.
 	/// - seealso: [std::rename](https://en.cppreference.com/w/cpp/io/c/rename)
 	static int rename(const char *old_filename, const char *new_filename) noexcept
 	{
 		return std::rename(old_filename, new_filename);
 	}
 
-	/// Calls `std::tmpfile`
+	/// Returns a `cio::cstream` object initialized with the result of `std::tmpfile()`.
 	/// - seealso: [std::tmpfile](https://en.cppreference.com/w/cpp/io/c/tmpfile)
+	[[nodiscard]]
 	static cstream tmpfile() noexcept
 	{
 		return cstream{std::tmpfile()};
 	}
 
-	/// Calls `std::tmpnam`
+	/// Returns the result of `std::tmpnam(filename)`.
 	/// - seealso: [std::tmpnam](https://en.cppreference.com/w/cpp/io/c/tmpnam)
 	[[deprecated("Use mkstemp(3) instead.")]]
 	static char * tmpnam(char *filename) noexcept
