@@ -475,7 +475,7 @@ public:
 		swapped,
 	};
 
-	/// Reads an unsigned integer value and optionally changes its byte order.
+	/// Reads an unsigned integer value, optionally changing its byte order.
 	/// - parameter value: A reference to receive the value.
 	/// - parameter order: The desired byte order.
 	/// - returns: `true` on success, `false` otherwise.
@@ -485,31 +485,53 @@ public:
 		if(!fread(value))
 			return false;
 
-		switch(order) {
-			case byte_order::little_endian:
-				switch(sizeof(T)) {
-					case 2:	value = OSSwapLittleToHostInt16(value); break;
-					case 4:	value = OSSwapLittleToHostInt32(value); break;
-					case 8:	value = OSSwapLittleToHostInt64(value); break;
-				}
-				break;
-			case byte_order::big_endian:
-				switch(sizeof(T)) {
-					case 2:	value = OSSwapBigToHostInt16(value); break;
-					case 4:	value = OSSwapBigToHostInt32(value); break;
-					case 8:	value = OSSwapBigToHostInt64(value); break;
-				}
-				break;
-			case byte_order::host:
-				break;
-			case byte_order::swapped:
-				switch(sizeof(T)) {
-					case 2: value = OSSwapInt16(value); break;
-					case 4: value = OSSwapInt32(value); break;
-					case 8: value = OSSwapInt64(value); break;
-				}
-				break;
+		if constexpr (std::is_same_v<T, std::uint16_t>) {
+			switch(order) {
+				case byte_order::little_endian:
+					value = OSSwapLittleToHostInt16(value);
+					break;
+				case byte_order::big_endian:
+					value = OSSwapBigToHostInt16(value);
+					break;
+				case byte_order::host:
+					break;
+				case byte_order::swapped:
+					value = OSSwapInt16(value);
+					break;
+			}
 		}
+		else if constexpr (std::is_same_v<T, std::uint32_t>) {
+			switch(order) {
+				case byte_order::little_endian:
+					value = OSSwapLittleToHostInt32(value);
+					break;
+				case byte_order::big_endian:
+					value = OSSwapBigToHostInt32(value);
+					break;
+				case byte_order::host:
+					break;
+				case byte_order::swapped:
+					value = OSSwapInt32(value);
+					break;
+			}
+		}
+		else if constexpr (std::is_same_v<T, std::uint64_t>) {
+			switch(order) {
+				case byte_order::little_endian:
+					value = OSSwapLittleToHostInt64(value);
+					break;
+				case byte_order::big_endian:
+					value = OSSwapBigToHostInt64(value);
+					break;
+				case byte_order::host:
+					break;
+				case byte_order::swapped:
+					value = OSSwapInt64(value);
+					break;
+			}
+		}
+		else
+			static_assert(false, "Invalid typename T");
 
 		return true;
 	}
