@@ -475,11 +475,11 @@ public:
 		swapped,
 	};
 
-	/// Reads an unsigned integer value, optionally changing its byte order.
+	/// Reads an unsigned integer value in the specified byte order.
 	/// - parameter value: A reference to receive the value.
 	/// - parameter order: The desired byte order.
 	/// - returns: `true` on success, `false` otherwise.
-	template <typename T, typename = std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>>
+	template <typename T, typename = std::enable_if_t<std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> || std::is_same_v<T, std::uint64_t>>>
 	bool read_uint(T& value, byte_order order = byte_order::host) noexcept
 	{
 		if(!fread(value))
@@ -499,6 +499,7 @@ public:
 					value = OSSwapInt16(value);
 					break;
 			}
+			return true;
 		}
 		else if constexpr (std::is_same_v<T, std::uint32_t>) {
 			switch(order) {
@@ -514,6 +515,7 @@ public:
 					value = OSSwapInt32(value);
 					break;
 			}
+			return true;
 		}
 		else if constexpr (std::is_same_v<T, std::uint64_t>) {
 			switch(order) {
@@ -529,14 +531,15 @@ public:
 					value = OSSwapInt64(value);
 					break;
 			}
+			return true;
 		}
 		else
-			static_assert(false, "Invalid typename T");
+			static_assert(false, "Unsupported unsigned integer type in read_uint");
 
-		return true;
+		return false;
 	}
 
-	/// Reads a little-endian unsigned integer value and converts it to host byte order.
+	/// Reads an unsigned integer value in little-endian byte order.
 	/// - parameter value: A reference to receive the value.
 	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
@@ -545,7 +548,7 @@ public:
 		return read_uint(value, byte_order::little_endian);
 	}
 
-	/// Reads a big-endian unsigned integer value and converts it to host byte order.
+	/// Reads an unsigned integer value in big-endian byte order.
 	/// - parameter value: A reference to receive the value.
 	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
@@ -554,7 +557,7 @@ public:
 		return read_uint(value, byte_order::big_endian);
 	}
 
-	/// Reads an unsigned integer value and swaps it byte order.
+	/// Reads an unsigned integer value with swapped byte order.
 	/// - parameter value: A reference to receive the value.
 	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
@@ -564,11 +567,11 @@ public:
 	}
 
 
-	/// Writes an unsigned integer value, optionally changing its byte order.
+	/// Writes an unsigned integer value in the specified byte order.
 	/// - parameter value: The value to write.
 	/// - parameter order: The desired byte order.
 	/// - returns: `true` on success, `false` otherwise.
-	template <typename T, typename = std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>>
+	template <typename T, typename = std::enable_if_t<std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> || std::is_same_v<T, std::uint64_t>>>
 	bool write_uint(const T& value, byte_order order = byte_order::host) noexcept
 	{
 		if constexpr (std::is_same_v<T, std::uint16_t>) {
@@ -608,12 +611,12 @@ public:
 			}
 		}
 		else
-			static_assert(false, "Invalid typename T");
+			static_assert(false, "Invalid typename T in write_uint");
 
 		return false;
 	}
 
-	/// Writes an unsigned integer value converted to little-endian byte order.
+	/// Writes an unsigned integer value in little-endian byte order.
 	/// - parameter value: The value to write.
 	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
@@ -622,7 +625,7 @@ public:
 		return write_uint(value, byte_order::little_endian);
 	}
 
-	/// Writes an unsigned integer value converted to big-endian byte order.
+	/// Writes an unsigned integer value in big-endian byte order.
 	/// - parameter value: The value to write.
 	/// - returns: `true` on success, `false` otherwise.
 	template <typename T>
