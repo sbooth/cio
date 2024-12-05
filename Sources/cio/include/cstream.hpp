@@ -423,38 +423,29 @@ public:
 	// MARK: - Extensions
 
 	/// Reads a block of data.
-	/// - parameter length: The maximum number of bytes to read.
-	/// - returns: A `std::vector` containing the requested bytes.
+	/// - parameter count: The maximum number of elements to read.
+	/// - returns: A `std::vector` containing the requested elements.
 	/// - throws: Any exception thrown by `Allocator::allocate()` (typically `std::bad_alloc`)
 	/// - throws: `std::length_error`
-	std::vector<uint8_t> read_block(std::vector<uint8_t>::size_type length)
+	template <typename T>
+	std::vector<T> read_block(typename std::vector<T>::size_type count)
 	{
-		if(length == 0)
+		if(count == 0)
 			return {};
-		std::vector<uint8_t> buf(length);
-		buf.resize(fread(buf.data(), length));
+		std::vector<T> buf(count);
+		buf.resize(fread(buf.data(), count));
 		return buf;
 	}
 
-	/// Reads a value.
-	/// - parameter value: A reference to receive the value.
-	/// - returns: `true` on success, `false` otherwise.
+	/// Writes a block of data.
+	/// - parameter v: The data to write.
+	/// - returns: The number of elements written.
 	template <typename T>
-	bool read(T& value) noexcept
+	typename std::vector<T>::size_type write_block(const std::vector<T>& v) noexcept
 	{
-		return fread(&value, 1) == 1;
+		return static_cast<typename std::vector<T>::size_type>(fwrite(v.data(), v.size()));
 	}
 
-	/// Reads a value.
-	/// - returns: The value read or `std::nullopt` on failure.
-	template <typename T, typename = std::enable_if_t<std::is_trivially_default_constructible_v<T>>>
-	std::optional<T> read() noexcept(std::is_nothrow_default_constructible_v<T>)
-	{
-		T value{};
-		if(!read(value))
-			return std::nullopt;
-		return value;
-	}
 
 	/// Possible byte orders.
 	enum class byte_order
@@ -476,7 +467,7 @@ public:
 	template <typename T, typename = std::enable_if_t<std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>>>
 	bool read_uint(T& value, byte_order order) noexcept
 	{
-		if(!read(value))
+		if(fread(value) != 1)
 			return false;
 
 		switch(order) {
