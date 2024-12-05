@@ -87,7 +87,7 @@ public:
 
 	// MARK: Managed Stream Handling
 
-	/// Returns `true` if the managed stream is not `std::nullptr`.
+	/// Returns `true` if the managed stream is not `nullptr`.
 	[[nodiscard]]
 	explicit operator bool() const noexcept
 	{
@@ -150,7 +150,7 @@ public:
 		return *this;
 	}
 
-	/// Returns the result of `std::fclose()` on the managed stream and sets the managed stream to `std::nullptr`.
+	/// Returns the result of `std::fclose()` on the managed stream and sets the managed stream to `nullptr`.
 	/// - seealso: [std::fclose](https://en.cppreference.com/w/cpp/io/c/fclose)
 	int fclose() noexcept
 	{
