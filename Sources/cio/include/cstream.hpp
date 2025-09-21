@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Stephen F. Booth
+// Copyright © 2024-2025 Stephen F. Booth
 // Part of https://github.com/sbooth/cio
 // MIT license
 //
@@ -134,8 +134,8 @@ public:
 	cstream& fopen(const char *filename, const char *mode) noexcept
 	{
 #if false
-		assert(mStream == nullptr);
-		mStream = std::fopen(filename, mode);
+		assert(stream_ == nullptr);
+		stream_ = std::fopen(filename, mode);
 #else
 		reset(std::fopen(filename, mode));
 #endif
