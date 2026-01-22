@@ -35,11 +35,6 @@ class cstream {
     // This class is non-assignable.
     cstream& operator=(const cstream& rhs) = delete;
 
-    /// Closes the managed stream.
-    ~cstream() {
-        reset();
-    }
-
     /// Initializes a `cio::cstream` object with the managed stream from `rhs` and sets the managed stream of `rhs` to
     /// `nullptr`.
     cstream(cstream&& rhs) noexcept
@@ -51,6 +46,11 @@ class cstream {
         if (this != &rhs)
             reset(rhs.release());
         return *this;
+    }
+
+    /// Closes the managed stream.
+    ~cstream() {
+        reset();
     }
 
     // MARK: Initialization
