@@ -43,8 +43,9 @@ class cstream {
     /// Closes the managed stream and replaces it with the managed stream from `rhs`, then sets the managed stream of
     /// `rhs` to `nullptr`.
     cstream& operator=(cstream&& rhs) noexcept {
-        if (this != &rhs)
+        if (this != &rhs) {
             reset(rhs.release());
+        }
         return *this;
     }
 
@@ -101,8 +102,9 @@ class cstream {
 
     /// Closes the managed stream and replaces it with `stream`.
     void reset(std::FILE *stream = nullptr) noexcept {
-        if (auto old = std::exchange(stream_, stream); old)
+        if (auto old = std::exchange(stream_, stream); old) {
             std::fclose(old);
+        }
     }
 
     /// Swaps the managed streams of this object and `other`.
@@ -382,8 +384,9 @@ class cstream {
     /// - throws: `std::length_error`
     template <typename T>
     std::vector<T> read_block(typename std::vector<T>::size_type count) {
-        if (count == 0)
+        if (count == 0) {
             return {};
+        }
         std::vector<T> buf(count);
         buf.resize(fread(buf.data(), count));
         return buf;
@@ -402,8 +405,9 @@ class cstream {
     template <typename T, typename = std::enable_if_t<std::is_trivially_default_constructible_v<T>>>
     std::optional<T> get_value() noexcept(std::is_nothrow_default_constructible_v<T>) {
         T value{};
-        if (!fread(value))
+        if (!fread(value)) {
             return std::nullopt;
+        }
         return value;
     }
 
@@ -427,8 +431,9 @@ class cstream {
               typename = std::enable_if_t<std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> ||
                                           std::is_same_v<T, std::uint64_t>>>
     bool read_uint(T& value, byte_order order = byte_order::host) noexcept {
-        if (!fread(value))
+        if (!fread(value)) {
             return false;
+        }
 
         if constexpr (std::is_same_v<T, std::uint16_t>) {
             switch (order) {
@@ -475,8 +480,9 @@ class cstream {
                 break;
             }
             return true;
-        } else
+        } else {
             static_assert(false, "Unsupported unsigned integer type in read_uint");
+        }
 
         return false;
     }
@@ -546,8 +552,9 @@ class cstream {
             case byte_order::swapped:
                 return fwrite(OSSwapInt64(value));
             }
-        } else
+        } else {
             static_assert(false, "Invalid typename T in write_uint");
+        }
 
         return false;
     }
