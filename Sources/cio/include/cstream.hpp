@@ -22,7 +22,6 @@ namespace cio {
 ///
 /// For more information see [cppreference](https://en.cppreference.com/w/cpp/io/c).
 class cstream {
-
   public:
     // MARK: Standard Six
 
@@ -54,7 +53,7 @@ class cstream {
         reset();
     }
 
-    // MARK: Initialization
+    // MARK: Construction
 
     /// Initializes a `cio::cstream` object and sets the managed stream to the result of `std::fopen(filename, mode)`.
     cstream(const char *filename, const char *mode) noexcept
@@ -585,7 +584,7 @@ class cstream {
 
   private:
     /// The managed C stream.
-    std::FILE *stream_ = nullptr;
+    std::FILE *stream_{nullptr};
 };
 
 } /* namespace cio */
