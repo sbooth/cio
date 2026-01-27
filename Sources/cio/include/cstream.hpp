@@ -49,7 +49,7 @@ class cstream {
     }
 
     /// Closes the managed stream.
-    ~cstream() { reset(); }
+    ~cstream() noexcept { reset(); }
 
     // MARK: Construction
 
