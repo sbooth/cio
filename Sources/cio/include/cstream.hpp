@@ -30,19 +30,18 @@ class cstream {
     explicit constexpr cstream() noexcept = default;
 
     // This class is non-copyable.
-    cstream(const cstream& rhs) = delete;
+    cstream(const cstream &rhs) = delete;
 
     // This class is non-assignable.
-    cstream& operator=(const cstream& rhs) = delete;
+    cstream &operator=(const cstream &rhs) = delete;
 
     /// Initializes a `cio::cstream` object with the managed stream from `rhs` and sets the managed stream of `rhs` to
     /// `nullptr`.
-    cstream(cstream&& rhs) noexcept
-      : cstream{rhs.release()} {}
+    cstream(cstream &&rhs) noexcept : cstream{rhs.release()} {}
 
     /// Closes the managed stream and replaces it with the managed stream from `rhs`, then sets the managed stream of
     /// `rhs` to `nullptr`.
-    cstream& operator=(cstream&& rhs) noexcept {
+    cstream &operator=(cstream &&rhs) noexcept {
         if (this != &rhs) {
             reset(rhs.release());
         }
@@ -50,35 +49,27 @@ class cstream {
     }
 
     /// Closes the managed stream.
-    ~cstream() {
-        reset();
-    }
+    ~cstream() noexcept { reset(); }
 
     // MARK: Construction
 
     /// Initializes a `cio::cstream` object and sets the managed stream to the result of `std::fopen(filename, mode)`.
-    cstream(const char *filename, const char *mode) noexcept
-      : stream_{std::fopen(filename, mode)} {}
+    cstream(const char *filename, const char *mode) noexcept : stream_{std::fopen(filename, mode)} {}
 
     /// Initializes a `cio::cstream` object and sets the managed stream to `stream`.
-    explicit cstream(std::FILE *stream) noexcept
-      : stream_{stream} {}
+    explicit cstream(std::FILE *stream) noexcept : stream_{stream} {}
 
     // MARK: Comparison
 
     /// Compares two `cio::cstream` objects for equality.
     /// - parameter rhs: The object to compare.
     /// - returns: `true` if the objects are equal, `false` otherwise.
-    bool operator==(const cstream& rhs) const noexcept {
-        return stream_ == rhs.stream_;
-    }
+    bool operator==(const cstream &rhs) const noexcept { return stream_ == rhs.stream_; }
 
     /// Compares two `cio::cstream` objects for inequality.
     /// - parameter rhs: The object to compare.
     /// - returns: `true` if the objects are not equal, `false` otherwise.
-    bool operator!=(const cstream& rhs) const noexcept {
-        return !operator==(rhs);
-    }
+    bool operator!=(const cstream &rhs) const noexcept { return !operator==(rhs); }
 
     // MARK: Managed Stream Handling
 
@@ -108,20 +99,16 @@ class cstream {
     }
 
     /// Swaps the managed streams of this object and `other`.
-    void swap(cstream& other) noexcept {
-        std::swap(stream_, other.stream_);
-    }
+    void swap(cstream &other) noexcept { std::swap(stream_, other.stream_); }
 
     /// Releases ownership of the managed stream and returns it without closing.
-    std::FILE *release() noexcept {
-        return std::exchange(stream_, nullptr);
-    }
+    std::FILE *release() noexcept { return std::exchange(stream_, nullptr); }
 
     // MARK: File Access
 
     /// Sets the managed stream to the result of `std::fopen(filename, mode)`.
     /// - seealso: [std::fopen](https://en.cppreference.com/w/cpp/io/c/fopen)
-    cstream& fopen(const char *filename, const char *mode) noexcept {
+    cstream &fopen(const char *filename, const char *mode) noexcept {
 #if false
 		assert(stream_ == nullptr);
 		stream_ = std::fopen(filename, mode);
@@ -133,7 +120,7 @@ class cstream {
 
     /// Sets the managed stream to the result of `std::freopen(filename, mode)` on the current managed stream.
     /// - seealso: [std::freopen](https://en.cppreference.com/w/cpp/io/c/freopen)
-    cstream& freopen(const char *filename, const char *mode) noexcept {
+    cstream &freopen(const char *filename, const char *mode) noexcept {
         stream_ = std::freopen(filename, mode, stream_);
         return *this;
     }
@@ -148,26 +135,18 @@ class cstream {
 
     /// Returns the result of `std::fflush()` on the managed stream.
     /// - seealso: [std::fflush](https://en.cppreference.com/w/cpp/io/c/fflush)
-    int fflush() noexcept {
-        return std::fflush(stream_);
-    }
+    int fflush() noexcept { return std::fflush(stream_); }
 
     /// Calls `std::setbuf(buffer)` on the managed stream.
     /// - seealso: [std::setbuf](https://en.cppreference.com/w/cpp/io/c/setbuf)
-    void setbuf(char *buffer) noexcept {
-        std::setbuf(stream_, buffer);
-    }
+    void setbuf(char *buffer) noexcept { std::setbuf(stream_, buffer); }
 
     /// Returns the result of `std::setvbuf(buffer, mode, size)` on the managed stream.
     /// - seealso: [std::setvbuf](https://en.cppreference.com/w/cpp/io/c/setvbuf)
-    int setvbuf(char *buffer, int mode, std::size_t size) noexcept {
-        return std::setvbuf(stream_, buffer, mode, size);
-    }
+    int setvbuf(char *buffer, int mode, std::size_t size) noexcept { return std::setvbuf(stream_, buffer, mode, size); }
 
     /// Returns the result of `setvbuf(nullptr, _IONBF, 0)`.
-    int setvbuf(std::nullptr_t) noexcept {
-        return setvbuf(nullptr, _IONBF, 0);
-    }
+    int setvbuf(std::nullptr_t) noexcept { return setvbuf(nullptr, _IONBF, 0); }
 
     // MARK: Direct Input/Output
 
@@ -184,16 +163,10 @@ class cstream {
     }
 
     /// Returns the result of `fread(buffer, S)`.
-    template <typename T, std::size_t S>
-    std::size_t fread(T (&buffer)[S]) noexcept {
-        return fread(buffer, S);
-    }
+    template <typename T, std::size_t S> std::size_t fread(T (&buffer)[S]) noexcept { return fread(buffer, S); }
 
     /// Returns the result of `fread(&value, 1) == 1`.
-    template <typename T>
-    bool fread(T& value) noexcept {
-        return fread(&value, 1) == 1;
-    }
+    template <typename T> bool fread(T &value) noexcept { return fread(&value, 1) == 1; }
 
     /// Returns the result of `std::fwrite(buffer, size, count)` on the managed stream.
     /// - seealso: [std::fwrite](https://en.cppreference.com/w/cpp/io/c/fwrite)
@@ -208,16 +181,10 @@ class cstream {
     }
 
     /// Returns the result of `fwrite(buffer, S)`.
-    template <typename T, std::size_t S>
-    std::size_t fwrite(const T (&buffer)[S]) noexcept {
-        return fwrite(buffer, S);
-    }
+    template <typename T, std::size_t S> std::size_t fwrite(const T (&buffer)[S]) noexcept { return fwrite(buffer, S); }
 
     /// Returns the result of `fwrite(&value, 1) == 1`.
-    template <typename T>
-    bool fwrite(const T& value) noexcept {
-        return fwrite(&value, 1) == 1;
-    }
+    template <typename T> bool fwrite(const T &value) noexcept { return fwrite(&value, 1) == 1; }
 
     // MARK: Unformatted Input/Output
 
@@ -230,61 +197,44 @@ class cstream {
 
     /// Returns the result of `std::fgets(str)` on the managed stream.
     /// - seealso: [std::fgets](https://en.cppreference.com/w/cpp/io/c/fgets)
-    char *fgets(char *str, int count) noexcept {
-        return std::fgets(str, count, stream_);
-    }
+    char *fgets(char *str, int count) noexcept { return std::fgets(str, count, stream_); }
 
     /// Returns the result of `fgets(str, S)`.
-    template <std::size_t S>
-    char *fgets(char (&str)[S]) noexcept {
-        return fgets(str, S);
-    }
+    template <std::size_t S> char *fgets(char (&str)[S]) noexcept { return fgets(str, S); }
 
     /// Returns the result of `std::fputc(ch)` on the managed stream.
     /// - seealso: [std::fputc](https://en.cppreference.com/w/cpp/io/c/fputc)
-    int fputc(int ch) noexcept {
-        return std::fputc(ch, stream_);
-    }
+    int fputc(int ch) noexcept { return std::fputc(ch, stream_); }
 
     /// Returns the result of `std::fputs(str)` on the managed stream.
     /// - seealso: [std::fputs](https://en.cppreference.com/w/cpp/io/c/fputs)
-    int fputs(const char *str) noexcept {
-        return std::fputs(str, stream_);
-    }
+    int fputs(const char *str) noexcept { return std::fputs(str, stream_); }
 
     /// Returns the result of `std::ungetc(ch)` on the managed stream.
     /// - seealso: [std::ungetc](https://en.cppreference.com/w/cpp/io/c/ungetc)
-    int ungetc(int ch) noexcept {
-        return std::ungetc(ch, stream_);
-    }
+    int ungetc(int ch) noexcept { return std::ungetc(ch, stream_); }
 
     // MARK: Formatted Input/Output
 
     /// Returns the result of `std::fscanf(format, std::forward<Args>(args)...` on the managed stream.
     /// - seealso: [std::fscanf](https://en.cppreference.com/w/cpp/io/c/fscanf)
-    template <typename... Args>
-    int fscanf(const char *format, Args&&...args) noexcept {
+    template <typename... Args> int fscanf(const char *format, Args &&...args) noexcept {
         return std::fscanf(stream_, format, std::forward<Args>(args)...);
     }
 
     /// Returns the result of `std::vfscanf(format, vlist)` on the managed stream.
     /// - seealso: [std::vfscanf](https://en.cppreference.com/w/cpp/io/c/vfscanf)
-    int vfscanf(const char *format, std::va_list vlist) noexcept {
-        return std::vfscanf(stream_, format, vlist);
-    }
+    int vfscanf(const char *format, std::va_list vlist) noexcept { return std::vfscanf(stream_, format, vlist); }
 
     /// Returns the result of `std::fprintf(format, std::forward<Args>(args)...)` on the managed stream.
     /// - seealso: [std::fprintf](https://en.cppreference.com/w/cpp/io/c/fprintf)
-    template <typename... Args>
-    int fprintf(const char *format, Args&&...args) noexcept {
+    template <typename... Args> int fprintf(const char *format, Args &&...args) noexcept {
         return std::fprintf(stream_, format, std::forward<Args>(args)...);
     }
 
     /// Returns the result of `std::vfprintf(format, vlist)` on the managed stream.
     /// - seealso: [std::vfprintf](https://en.cppreference.com/w/cpp/io/c/vfprintf)
-    int vfprintf(const char *format, std::va_list vlist) noexcept {
-        return std::vfprintf(stream_, format, vlist);
-    }
+    int vfprintf(const char *format, std::va_list vlist) noexcept { return std::vfprintf(stream_, format, vlist); }
 
     // MARK: File Positioning
 
@@ -297,35 +247,25 @@ class cstream {
 
     /// Returns the result of `std::fgetpos(pos)` on the managed stream.
     /// - seealso: [std::fgetpos](https://en.cppreference.com/w/cpp/io/c/fgetpos)
-    int fgetpos(std::fpos_t *pos) const noexcept {
-        return std::fgetpos(stream_, pos);
-    }
+    int fgetpos(std::fpos_t *pos) const noexcept { return std::fgetpos(stream_, pos); }
 
     /// Returns the result of `std::fseek(offset, origin)` on the managed stream.
     /// - seealso: [std::fseek](https://en.cppreference.com/w/cpp/io/c/fseek)
-    int fseek(long offset, int origin) noexcept {
-        return std::fseek(stream_, offset, origin);
-    }
+    int fseek(long offset, int origin) noexcept { return std::fseek(stream_, offset, origin); }
 
     /// Returns the result of `std::fsetpos(pos)` on the managed stream.
     /// - seealso: [std::fsetpos](https://en.cppreference.com/w/cpp/io/c/fsetpos)
-    int fsetpos(const std::fpos_t *pos) noexcept {
-        return std::fsetpos(stream_, pos);
-    }
+    int fsetpos(const std::fpos_t *pos) noexcept { return std::fsetpos(stream_, pos); }
 
     /// Calls `std::rewind()` on the managed stream.
     /// - seealso: [std::rewind](https://en.cppreference.com/w/cpp/io/c/rewind)
-    void rewind() noexcept {
-        std::rewind(stream_);
-    }
+    void rewind() noexcept { std::rewind(stream_); }
 
     // MARK: Error Handling
 
     /// Calls `std::clearerr()` on the managed stream.
     /// - seealso: [std::clearerr](https://en.cppreference.com/w/cpp/io/c/clearerr)
-    void clearerr() noexcept {
-        std::clearerr(stream_);
-    }
+    void clearerr() noexcept { std::clearerr(stream_); }
 
     /// Returns the result of `std::feof()` on the managed stream.
     /// - seealso: [std::feof](https://en.cppreference.com/w/cpp/io/c/feof)
@@ -343,17 +283,13 @@ class cstream {
 
     /// Calls `std::perror(s)`.
     /// - seealso: [std::perror](https://en.cppreference.com/w/cpp/io/c/perror)
-    static void perror(const char *s) noexcept {
-        std::perror(s);
-    }
+    static void perror(const char *s) noexcept { std::perror(s); }
 
     // MARK: Operations on Files
 
     /// Returns the result of `std::remove(pathname)`.
     /// - seealso: [std::remove](https://en.cppreference.com/w/cpp/io/c/remove)
-    static int remove(const char *pathname) noexcept {
-        return std::remove(pathname);
-    }
+    static int remove(const char *pathname) noexcept { return std::remove(pathname); }
 
     /// Returns the result of `std::rename(old_filename, new_filename)`.
     /// - seealso: [std::rename](https://en.cppreference.com/w/cpp/io/c/rename)
@@ -382,8 +318,7 @@ class cstream {
     /// - returns: A `std::vector` containing the requested elements.
     /// - throws: Any exception thrown by `Allocator::allocate()` (typically `std::bad_alloc`)
     /// - throws: `std::length_error`
-    template <typename T>
-    std::vector<T> read_block(typename std::vector<T>::size_type count) {
+    template <typename T> std::vector<T> read_block(typename std::vector<T>::size_type count) {
         if (count == 0) {
             return {};
         }
@@ -395,8 +330,7 @@ class cstream {
     /// Writes a block of data.
     /// - parameter v: A `std::vector` containing the elements to write.
     /// - returns: The number of elements written.
-    template <typename T>
-    typename std::vector<T>::size_type write_block(const std::vector<T>& v) noexcept {
+    template <typename T> typename std::vector<T>::size_type write_block(const std::vector<T> &v) noexcept {
         return static_cast<typename std::vector<T>::size_type>(fwrite(v.data(), v.size()));
     }
 
@@ -430,7 +364,7 @@ class cstream {
     template <typename T,
               typename = std::enable_if_t<std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> ||
                                           std::is_same_v<T, std::uint64_t>>>
-    bool read_uint(T& value, byte_order order = byte_order::host) noexcept {
+    bool read_uint(T &value, byte_order order = byte_order::host) noexcept {
         if (!fread(value)) {
             return false;
         }
@@ -490,26 +424,19 @@ class cstream {
     /// Reads an unsigned integer value in little-endian byte order.
     /// - parameter value: A reference to receive the value.
     /// - returns: `true` on success, `false` otherwise.
-    template <typename T>
-    bool read_uint_little(T& value) noexcept {
+    template <typename T> bool read_uint_little(T &value) noexcept {
         return read_uint(value, byte_order::little_endian);
     }
 
     /// Reads an unsigned integer value in big-endian byte order.
     /// - parameter value: A reference to receive the value.
     /// - returns: `true` on success, `false` otherwise.
-    template <typename T>
-    bool read_uint_big(T& value) noexcept {
-        return read_uint(value, byte_order::big_endian);
-    }
+    template <typename T> bool read_uint_big(T &value) noexcept { return read_uint(value, byte_order::big_endian); }
 
     /// Reads an unsigned integer value with swapped byte order.
     /// - parameter value: A reference to receive the value.
     /// - returns: `true` on success, `false` otherwise.
-    template <typename T>
-    bool read_uint_swapped(T& value) noexcept {
-        return read_uint(value, byte_order::swapped);
-    }
+    template <typename T> bool read_uint_swapped(T &value) noexcept { return read_uint(value, byte_order::swapped); }
 
     /// Writes an unsigned integer value in the specified byte order.
     /// - parameter value: The value to write.
@@ -518,7 +445,7 @@ class cstream {
     template <typename T,
               typename = std::enable_if_t<std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> ||
                                           std::is_same_v<T, std::uint64_t>>>
-    bool write_uint(const T& value, byte_order order = byte_order::host) noexcept {
+    bool write_uint(const T &value, byte_order order = byte_order::host) noexcept {
         if constexpr (std::is_same_v<T, std::uint16_t>) {
             switch (order) {
             case byte_order::little_endian:
@@ -562,24 +489,21 @@ class cstream {
     /// Writes an unsigned integer value in little-endian byte order.
     /// - parameter value: The value to write.
     /// - returns: `true` on success, `false` otherwise.
-    template <typename T>
-    bool write_uint_little(const T& value) noexcept {
+    template <typename T> bool write_uint_little(const T &value) noexcept {
         return write_uint(value, byte_order::little_endian);
     }
 
     /// Writes an unsigned integer value in big-endian byte order.
     /// - parameter value: The value to write.
     /// - returns: `true` on success, `false` otherwise.
-    template <typename T>
-    bool write_uint_big(const T& value) noexcept {
+    template <typename T> bool write_uint_big(const T &value) noexcept {
         return write_uint(value, byte_order::big_endian);
     }
 
     /// Writes an unsigned integer value with swapped byte order.
     /// - parameter value: The value to write.
     /// - returns: `true` on success, `false` otherwise.
-    template <typename T>
-    bool write_uint_swapped(const T& value) noexcept {
+    template <typename T> bool write_uint_swapped(const T &value) noexcept {
         return write_uint(value, byte_order::swapped);
     }
 
