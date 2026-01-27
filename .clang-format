@@ -9,15 +9,7 @@ ColumnLimit: 120
 
 InsertBraces: true
 
-AllowShortFunctionsOnASingleLine: Empty
-AllowShortBlocksOnASingleLine: Empty
-
-ConstructorInitializerIndentWidth: 2
-PackConstructorInitializers: NextLineOnly
-
-ReferenceAlignment: Left
-
-BreakTemplateDeclarations: Yes
+ConstructorInitializerIndentWidth: 8
 
 IncludeBlocks: Regroup
 IncludeCategories:
